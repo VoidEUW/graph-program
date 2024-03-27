@@ -9,11 +9,13 @@
 int main(int argc, char ** argv) {
 
     Grid grid;
-    LinearFunction func1 = {1, 0, LINEAR_FUNCTION};
+    //Function func1 = {1, 0, 0, POWER_FUNCTION};
+    Function func2 = {0.2, 3, 0, POWER_FUNCTION};
 
     fillBoard(grid);
 
-    drawGraph(grid, func1);
+    //drawGraph(grid, func1, '*');
+    drawGraph(grid, func2, '$');
 
     printBoard(grid);
 
@@ -30,41 +32,50 @@ void fillBoard(Grid grid) {
         for(int canvasX = 0; canvasX < LENGTH; canvasX++) {
             if(canvasY == HEIGHT/2) {
                 for(int canvasX = 0; canvasX < LENGTH; canvasX++) {
-                    grid[canvasX][canvasY] = '#';
+                    grid[canvasX][canvasY] = X_AXIS_LINE;
                 }
             } else {
                 if(canvasX == LENGTH/2) {
-                grid[canvasX][canvasY] = '#';
+                grid[canvasX][canvasY] = Y_AXIS_LINE;
                 }
                 else grid[canvasX][canvasY] = ' ';
             }
         }
     }
+    grid[LENGTH/2][HEIGHT/2] = COORDINATE_START;
 }
 
 /*
     filling the board content with either " " or "#"
     - filling with "*" on the right  
 */
-void drawGraph(Grid grid, LinearFunction func) {
+void drawGraph(Grid grid, Function func, char linetype) {
     for(int canvasX = 0; canvasX < LENGTH ;canvasX++) {
         int y = getPosY(canvasX, func);
-        printf("X: %d  Y: %d\n", canvasX , y);
-        if(y > 0) {
-            grid[canvasX][y] = '*';
-            printf("GRID[%d][%d]: %c\n", canvasX, y, grid[canvasX][y]);
-        }
+        if (((y + HEIGHT/2) >= 0) && ((y + HEIGHT/2) < HEIGHT) ) {
+            grid[canvasX][y+HEIGHT/2] = linetype;
+        } else continue;
     }
 }
 
-int getPosY(int x, LinearFunction func) {
+int getPosY(int x, Function func) {
     FuncType funcType = func.FuncType;
     int y = 0;
+    int s = 0;
     x = x - LENGTH/2;
     switch(funcType) {
         case LINEAR_FUNCTION:
-            y = func.factor * x + func.yShift;
+            y = -func.factor * x - func.yShift; // Values have to be inverted
             break;
+        case POWER_FUNCTION:
+            s = x;
+            if(func.power > 0) {
+                for(int i = 1; i < func.power; i++) s = s * x;
+            }
+            else s = 1;
+            y = -func.factor * s - func.yShift; // Values have to be inverted
+            break;
+
         default:
             printf("WRONG FUNCTIONTYPE!\nSTOPPING...\n");
             exit(EXIT_FAILURE);
